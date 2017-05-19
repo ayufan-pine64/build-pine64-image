@@ -331,6 +331,9 @@ EOF
 				do_chroot /usr/local/sbin/install_desktop.sh i3
 				do_chroot systemctl set-default graphical.target
 				;;
+			sd2emmc)
+				do_chroot /usr/local/sbin/pine64_sd2emmc.sh
+				;;
 		esac
 		do_chroot systemctl enable ssh-keygen
 		if [ "$MODEL" = "pinebook" ]; then

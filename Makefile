@@ -138,6 +138,16 @@ stretch-i3-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pineb
 		pinebook \
 		i3
 
+xenial-sd2emmc-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pinebook-$(RELEASE_NAME).img.xz linux-pine64-$(RELEASE_NAME).tar.xz linux-pine64-package-$(RELEASE_NAME).deb boot-tools
+	sudo bash ./build-pine64-image.sh \
+		$(shell readlink -f $@) \
+		$(shell readlink -f $<) \
+		$(shell readlink -f linux-pine64-$(RELEASE_NAME).tar.xz) \
+		$(shell readlink -f linux-pine64-package-$(RELEASE_NAME).deb) \
+		xenial \
+		pinebook \
+		sd2emmc
+
 .PHONY: kernel-tarball
 kernel-tarball: linux-pine64-$(RELEASE_NAME).tar.xz
 
@@ -164,6 +174,9 @@ xenial-pinebook: xenial-minimal-pinebook xenial-mate-pinebook xenial-i3-pinebook
 
 .PHONY: linux-pinebook
 linux-pinebook: xenial-minimal-pinebook xenial-mate-pinebook xenial-i3-pinebook
+
+.PHONY: xenial-sd2emmc-pinebook
+xenial-sd2emmc-pinebook: xenial-sd2emmc-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
 
 .PHONY: xenial-minimal-pine64
  xenial-minimal-pine64: xenial-minimal-pine64-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
