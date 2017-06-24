@@ -68,6 +68,25 @@ linux-pine64-package-$(RELEASE_NAME).deb: package package/rtk_bt/rtk_hciattach/r
 		-a arm64 \
 		--config-files /var/lib/alsa/asound.state \
 		package/root/=/ \
+		package/root.firmware/=/ \
+		package/root.deb/=/ \
+		package/rtk_bt/rtk_hciattach/rtk_hciattach=/usr/local/sbin/rtk_hciattach
+
+linux-pine64-package-$(RELEASE_NAME).tar.xz: package package/rtk_bt/rtk_hciattach/rtk_hciattach
+	fpm -s dir -t pacman -n linux-pine64-package -v $(RELEASE_NAME) \
+		-p $@ \
+		--force \
+		--after-install package/scripts/postinst.pacman \
+		--url https://gitlab.com/ayufan-pine64/linux-build \
+		--description "Pine A64 Linux support package" \
+		-m "Kamil Trzciński <ayufan@ayufan.eu>" \
+		--license "MIT" \
+		--vendor "Kamil Trzciński" \
+		-a aarch64 \
+		--config-files /var/lib/alsa/asound.state \
+		package/root/=/ \
+		package/root.pacman/=/ \
+		package/root.firmware/=/usr/ \
 		package/rtk_bt/rtk_hciattach/rtk_hciattach=/usr/local/sbin/rtk_hciattach
 
 %.tar.xz: %.tar
@@ -155,6 +174,16 @@ stretch-i3-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pineb
 		pinebook \
 		i3
 
+archlinux-minimal-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pinebook-$(RELEASE_NAME).img.xz linux-pine64-$(RELEASE_NAME).tar.xz linux-pine64-package-$(RELEASE_NAME).tar.xz boot-tools
+	sudo bash ./build-pine64-image.sh \
+		$(shell readlink -f $@) \
+		$(shell readlink -f $<) \
+		$(shell readlink -f linux-pine64-$(RELEASE_NAME).tar.xz) \
+		$(shell readlink -f linux-pine64-package-$(RELEASE_NAME).tar.xz) \
+		arch \
+		pinebook \
+		minimal
+
 .PHONY: kernel-tarball
 kernel-tarball: linux-pine64-$(RELEASE_NAME).tar.xz
 
@@ -193,3 +222,6 @@ linux-pine64: xenial-minimal-pine64
 
 .PHONY: linux-sopine
 linux-sopine: xenial-minimal-sopine
+
+.PHONY: archlinux-minimal-pinebook
+ archlinux-minimal-pinebook: archlinux-minimal-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
