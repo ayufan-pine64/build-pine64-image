@@ -81,7 +81,7 @@ TAR_OPTIONS=""
 case $DISTRO in
 	arch)
 		ROOTFS="http://archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz"
-		TAR_OPTIONS="-z"
+		TAR_OPTIONS="-zv"
 		;;
 	xenial|zesty)
 		version=$(curl -s https://api.github.com/repos/$RELEASE_REPO/releases/latest | jq -r ".tag_name")
@@ -140,8 +140,36 @@ do_chroot() {
 # Run stuff in new system.
 case $DISTRO in
 	arch)
-		echo "No longer supported"
-		exit 1
+# Cleanup preinstalled Kernel
+	mv "$DEST/etc/resolv.conf" "$DEST/etc/resolv.conf.dist"
+	cp /etc/resolv.conf "$DEST/etc/resolv.conf"
+	sed -i 's|CheckSpace|#CheckSpace|' "$DEST/etc/pacman.conf"
+	do_chroot pacman -Syu --noconfirm || true
+	do_chroot pacman -Rsn --noconfirm linux-aarch64 || true
+	do_chroot pacman -S --noconfirm --needed dosfstools curl xz iw rfkill netctl dialog wpa_supplicant alsa-utils || true
+	cp $PACKAGEDEB $DEST/$(basename $PACKAGEDEB)
+	do_chroot pacman -U --noconfirm $(basename $PACKAGEDEB)
+	if [ "$MODEL" = "pinebook" ]; then
+		do_chroot systemctl enable pinebook-headphones
+	fi
+	cat > "$DEST/second-phase" <<EOF
+#!/bin/sh
+sed -i 's|^#en_US.UTF-8|en_US.UTF-8|' /etc/locale.gen
+cd /usr/share/i18n/charmaps
+# locale-gen can't spawn gzip when running under qemu-user, so ungzip charmap before running it
+# and then gzip it back
+gzip -d UTF-8.gz
+locale-gen
+gzip UTF-8
+localectl set-locale LANG=en_US.utf8
+localectl set-keymap us
+yes | pacman -Scc
+EOF
+	chmod +x "$DEST/second-phase"
+	do_chroot /second-phase
+	sed -i 's|#CheckSpace|CheckSpace|' "$DEST/etc/pacman.conf"
+	rm -f "$DEST/etc/resolv.conf"
+	mv "$DEST/etc/resolv.conf.dist" "$DEST/etc/resolv.conf"
 		;;
 	xenial|sid|jessie|stretch)
 		rm "$DEST/etc/resolv.conf"
