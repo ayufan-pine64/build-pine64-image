@@ -25,7 +25,7 @@ if [ -z "$VERSION" ]; then
 fi
 
 # Install Kernel modules
-make -C $LINUX ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_install INSTALL_MOD_PATH="$DEST"
+make -C $LINUX ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_install INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="$DEST"
 # Install Kernel firmware
 make -C $LINUX ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- firmware_install INSTALL_MOD_PATH="$DEST"
 
