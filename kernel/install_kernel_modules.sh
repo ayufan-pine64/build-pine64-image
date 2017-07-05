@@ -25,7 +25,7 @@ if [ -z "$VERSION" ]; then
 fi
 
 # Install Kernel modules
-make -C $LINUX ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_install INSTALL_MOD_PATH="$DEST"
+make -C $LINUX ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_install INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH="$DEST"
 # Install Kernel firmware
 make -C $LINUX ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- firmware_install INSTALL_MOD_PATH="$DEST"
 
@@ -39,6 +39,7 @@ if [ -e $LINUX/modules/gpu/mali400/kernel_mode/driver/src/devicedrv/mali/mali.ko
 	v=
 	mkdir "$DEST/lib/modules/$VERSION/kernel/extramodules"
 	cp -v $LINUX/modules/gpu/mali400/kernel_mode/driver/src/devicedrv/mali/mali.ko $DEST/lib/modules/$VERSION/kernel/extramodules
+	aarch64-linux-gnu-strip -g $DEST/lib/modules/$VERSION/kernel/extramodules/mali.ko
 	depmod -b $DEST $VERSION
 fi
 
