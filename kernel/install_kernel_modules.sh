@@ -39,6 +39,7 @@ if [ -e $LINUX/modules/gpu/mali400/kernel_mode/driver/src/devicedrv/mali/mali.ko
 	v=
 	mkdir "$DEST/lib/modules/$VERSION/kernel/extramodules"
 	cp -v $LINUX/modules/gpu/mali400/kernel_mode/driver/src/devicedrv/mali/mali.ko $DEST/lib/modules/$VERSION/kernel/extramodules
+	aarch64-linux-gnu-strip -g $DEST/lib/modules/$VERSION/kernel/extramodules/mali.ko
 	depmod -b $DEST $VERSION
 fi
 
