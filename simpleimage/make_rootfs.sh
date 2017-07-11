@@ -68,6 +68,7 @@ cleanup() {
 	if [ -d "$DEST/sys/kernel" ]; then
 		umount "$DEST/sys"
 	fi
+	umount "$DEST/dev" || true
 	umount "$DEST/tmp" || true
 	if [ -d "$TEMP" ]; then
 		rm -rf "$TEMP"
@@ -76,12 +77,15 @@ cleanup() {
 trap cleanup EXIT
 
 ROOTFS=""
+TAR=tar
 TAR_OPTIONS=""
 
 case $DISTRO in
 	arch)
+		version=$(date +%Y%m%d)
+		TAR=bsdtar
 		ROOTFS="http://archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz"
-		TAR_OPTIONS="-z"
+		TAR_OPTIONS="-p"
 		;;
 	xenial|zesty)
 		version=$(curl -s https://api.github.com/repos/$RELEASE_REPO/releases/latest | jq -r ".tag_name")
@@ -111,9 +115,9 @@ fi
 # Extract with BSD tar
 echo -n "Extracting ... "
 set -x
-tar -xf "$TARBALL" -C "$DEST" $TAR_OPTIONS
+$TAR -xf "$TARBALL" -C "$DEST" $TAR_OPTIONS
 echo "OK"
-rm -f "$TARBALL"
+#rm -f "$TARBALL"
 
 # Add qemu emulation.
 cp /usr/bin/qemu-aarch64-static "$DEST/usr/bin"
@@ -131,17 +135,80 @@ do_chroot() {
 	mount -o bind /tmp "$DEST/tmp"
 	chroot "$DEST" mount -t proc proc /proc
 	chroot "$DEST" mount -t sysfs sys /sys
+	chroot "$DEST" mount -t devtmpfs devtmpfs /dev
 	chroot "$DEST" $cmd
 	chroot "$DEST" umount /sys
 	chroot "$DEST" umount /proc
+	chroot "$DEST" umount /dev
 	umount "$DEST/tmp"
 }
 
 # Run stuff in new system.
 case $DISTRO in
 	arch)
-		echo "No longer supported"
-		exit 1
+		mv "$DEST/etc/resolv.conf" "$DEST/etc/resolv.conf.dist"
+		cp /etc/resolv.conf "$DEST/etc/resolv.conf"
+		sed -i 's|CheckSpace|#CheckSpace|' "$DEST/etc/pacman.conf"
+		cat >> "$DEST/etc/pacman.conf" <<EOF
+[archlinux-pine]
+SigLevel = Never
+Server = https://github.com/anarsoul/PKGBUILDs/releases/download/current/
+EOF
+		do_chroot pacman -Sy --noconfirm || true
+		# Cleanup preinstalled Kernel
+		do_chroot pacman -Rsn --noconfirm linux-aarch64 || true
+		# Remove files installed by make_simpleimage.sh
+		do_chroot rm -rf /boot/* || true
+		do_chroot pacman -Sy --noconfirm || true
+		do_chroot pacman -S --noconfirm --needed dosfstools curl xz iw rfkill netctl dialog wpa_supplicant \
+			     alsa-utils pv linux-pine64-bsp rtl8723ds_bt networkmanager || true
+		cat >> "$DEST/etc/NetworkManager/NetworkManager.conf" <<EOF
+[main]
+plugins=keyfile
+
+[keyfile]
+unmanaged-devices=interface-name:p2p0
+EOF
+		do_chroot pacman -S --noconfirm uboot-$MODEL-bin
+		cp $PACKAGEDEB $DEST/$(basename $PACKAGEDEB)
+		do_chroot pacman -U --noconfirm $(basename $PACKAGEDEB)
+		do_chroot rm $(basename $PACKAGEDEB)
+		if [ "$MODEL" = "pinebook" ]; then
+			do_chroot systemctl enable pinebook-headphones
+		fi
+		do_chroot systemctl enable getty@tty1
+		do_chroot systemctl enable NetworkManager
+		do_chroot systemd-machine-id-setup
+		case "$VARIANT" in
+			xfce)
+				do_chroot pacman -S --noconfirm xfce4 xf86-video-fbturbo-git lightdm lightdm-gtk-greeter \
+								firefox network-manager-applet xorg-server \
+								xf86-input-libinput firefox libvdpau-sunxi-git mpv blueman \
+								pulseaudio pulseaudio-alsa pavucontrol
+				do_chroot systemctl enable lightdm
+				do_chroot systemctl enable NetworkManager
+				do_chroot systemctl enable bluetooth
+		esac
+		cat > "$DEST/second-phase" <<EOF
+#!/bin/sh
+sed -i 's|^#en_US.UTF-8|en_US.UTF-8|' /etc/locale.gen
+cd /usr/share/i18n/charmaps
+# locale-gen can't spawn gzip when running under qemu-user, so ungzip charmap before running it
+# and then gzip it back
+gzip -d UTF-8.gz
+locale-gen
+gzip UTF-8
+localectl set-locale LANG=en_US.utf8
+localectl set-keymap us
+yes | pacman -Scc
+EOF
+		chmod +x "$DEST/second-phase"
+		do_chroot /second-phase
+		do_chroot rm /second-phase
+		sed -i 's|#CheckSpace|CheckSpace|' "$DEST/etc/pacman.conf"
+		rm -f "$DEST/etc/resolv.conf"
+		mv "$DEST/etc/resolv.conf.dist" "$DEST/etc/resolv.conf"
+		mv "$DEST"/boot/* "$BOOT"/
 		;;
 	xenial|sid|jessie|stretch)
 		rm "$DEST/etc/resolv.conf"

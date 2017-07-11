@@ -1,0 +1,8 @@
+[Unit]
+Description=Realtek H5 bluetooth support
+
+[Service]
+ExecStart=/usr/local/sbin/pinebook_start_bt.sh
+
+[Install]
+WantedBy=multi-user.target

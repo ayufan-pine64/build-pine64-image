@@ -1,4 +1,4 @@
-export RELEASE_NAME ?= 0.1~dev
+export RELEASE_NAME ?= $(shell date +%Y%m%d)
 export RELEASE ?= 1
 export LINUX_BRANCH ?= my-hacks-1.2
 export BOOT_TOOLS_BRANCH ?= master
@@ -68,7 +68,25 @@ linux-pine64-package-$(RELEASE_NAME).deb: package package/rtk_bt/rtk_hciattach/r
 		-a arm64 \
 		--config-files /var/lib/alsa/asound.state \
 		package/root/=/ \
+		package/root.firmware/=/ \
+		package/root.deb/=/ \
 		package/rtk_bt/rtk_hciattach/rtk_hciattach=/usr/local/sbin/rtk_hciattach
+
+linux-pine64-package-$(RELEASE_NAME).tar.xz: package
+	fpm -s dir -t pacman -n linux-pine64-package -v $(RELEASE_NAME) \
+		-p $@ \
+		--force \
+		--after-install package/scripts/postinst.pacman \
+		--url https://gitlab.com/ayufan-pine64/linux-build \
+		--description "Pine A64 Linux support package" \
+		-m "Kamil Trzciński <ayufan@ayufan.eu>" \
+		--license "MIT" \
+		--vendor "Kamil Trzciński" \
+		-a aarch64 \
+		--config-files /var/lib/alsa/asound.state \
+		package/root/=/ \
+		package/root.pacman/=/ \
+		package/root.firmware/=/usr/ \
 
 %.tar.xz: %.tar
 	pxz -f -3 $<
@@ -93,6 +111,24 @@ simple-image-pinebook-$(RELEASE_NAME).img: linux-pine64-$(RELEASE_NAME).tar.xz b
 		export boot0=../boot-tools/boot/pine64/boot0-pine64-pinebook.bin && \
 		export uboot=../boot-tools/boot/pine64/u-boot-pine64-pinebook.bin && \
 		bash ./make_simpleimage.sh $(shell readlink -f "$@") 150 $(shell readlink -f linux-pine64-$(RELEASE_NAME).tar.xz)
+
+simple-image-pine64-nokernel-$(RELEASE_NAME).img: boot-tools
+	cd simpleimage && \
+		export boot0=../boot-tools/boot/pine64/boot0-pine64-plus.bin && \
+		export uboot=../boot-tools/boot/pine64/u-boot-pine64-plus.bin && \
+		bash ./make_simpleimage.sh $(shell readlink -f "$@") 100 -
+
+simple-image-sopine-nokernel-$(RELEASE_NAME).img: boot-tools
+	cd simpleimage && \
+		export boot0=../boot-tools/boot/pine64/boot0-pine64-sopine.bin && \
+		export uboot=../boot-tools/boot/pine64/u-boot-pine64-sopine.bin && \
+		bash ./make_simpleimage.sh $(shell readlink -f "$@") 100 -
+
+simple-image-pinebook-nokernel-$(RELEASE_NAME).img: boot-tools
+	cd simpleimage && \
+		export boot0=../boot-tools/boot/pine64/boot0-pine64-pinebook.bin && \
+		export uboot=../boot-tools/boot/pine64/u-boot-pine64-pinebook.bin && \
+		bash ./make_simpleimage.sh $(shell readlink -f "$@") 100 -
 
 xenial-minimal-pine64-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pine64-$(RELEASE_NAME).img.xz linux-pine64-$(RELEASE_NAME).tar.xz linux-pine64-package-$(RELEASE_NAME).deb boot-tools
 	sudo bash ./build-pine64-image.sh \
@@ -155,6 +191,36 @@ stretch-i3-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pineb
 		pinebook \
 		i3
 
+archlinux-minimal-pine64-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pine64-nokernel-$(RELEASE_NAME).img.xz linux-pine64-package-$(RELEASE_NAME).tar.xz boot-tools
+	sudo bash ./build-pine64-image.sh \
+		$(shell readlink -f $@) \
+		$(shell readlink -f $<) \
+		- \
+		$(shell readlink -f linux-pine64-package-$(RELEASE_NAME).tar.xz) \
+		arch \
+		pine64 \
+		minimal
+
+archlinux-minimal-sopine-$(RELEASE_NAME)-$(RELEASE).img: simple-image-sopine-nokernel-$(RELEASE_NAME).img.xz linux-pine64-package-$(RELEASE_NAME).tar.xz boot-tools
+	sudo bash ./build-pine64-image.sh \
+		$(shell readlink -f $@) \
+		$(shell readlink -f $<) \
+		- \
+		$(shell readlink -f linux-pine64-package-$(RELEASE_NAME).tar.xz) \
+		arch \
+		sopine \
+		minimal
+
+archlinux-minimal-pinebook-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pinebook-nokernel-$(RELEASE_NAME).img.xz linux-pine64-package-$(RELEASE_NAME).tar.xz boot-tools
+	sudo bash ./build-pine64-image.sh \
+		$(shell readlink -f $@) \
+		$(shell readlink -f $<) \
+		- \
+		$(shell readlink -f linux-pine64-package-$(RELEASE_NAME).tar.xz) \
+		arch \
+		pinebook \
+		minimal
+
 .PHONY: kernel-tarball
 kernel-tarball: linux-pine64-$(RELEASE_NAME).tar.xz
 
@@ -193,3 +259,12 @@ linux-pine64: xenial-minimal-pine64
 
 .PHONY: linux-sopine
 linux-sopine: xenial-minimal-sopine
+
+.PHONY: archlinux-minimal-pine64
+ archlinux-minimal-pine64: archlinux-minimal-pine64-$(RELEASE_NAME)-$(RELEASE).img.xz
+
+.PHONY: archlinux-minimal-sopine
+ archlinux-minimal-sopine: archlinux-minimal-sopine-$(RELEASE_NAME)-$(RELEASE).img.xz
+
+.PHONY: archlinux-minimal-pinebook
+ archlinux-minimal-pinebook: archlinux-minimal-pinebook-$(RELEASE_NAME)-$(RELEASE).img.xz

@@ -85,7 +85,9 @@ dd if=/dev/zero bs=1M count=${boot_size} of=${out}1
 mkfs.vfat -n BOOT ${out}1
 
 # Add boot support if there
-if [ -n "$kernel_tarball" ]; then
+if [ "$kernel_tarball" == "-" ]; then
+	echo "Skipping kernel tarball installation"
+elif [ -n "$kernel_tarball" ]; then
 	echo "Using Kernel from $kernel_tarball ..."
 	tar -C $temp -xJf "$kernel_tarball"
 	mv $temp/boot/uEnv.txt.in $temp/boot/uEnv.txt

@@ -36,7 +36,9 @@ if [ -z "$DISTRO" ]; then
 fi
 
 SIMPLEIMAGE=$(readlink -f "$SIMPLEIMAGE")
-KERNELTAR=$(readlink -f "$KERNELTAR")
+if [ "$KERNELTAR" != "-" ]; then
+	KERNELTAR=$(readlink -f "$KERNELTAR")
+fi
 
 PWD=$(readlink -f .)
 TEMP=$(mktemp -p $PWD -d -t "$MODEL-build-XXXXXXXXXX")
