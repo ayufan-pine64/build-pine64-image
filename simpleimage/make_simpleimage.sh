@@ -28,7 +28,7 @@ if [ -z "$out" ]; then
 fi
 
 if [ -z "$disk_size" ]; then
-	disk_size=100 #MiB
+	disk_size=150 #MiB
 fi
 
 if [ "$disk_size" -lt 60 ]; then
@@ -73,7 +73,7 @@ trap cleanup EXIT
 boot0_position=8      # KiB
 uboot_position=19096  # KiB
 part_position=20480   # KiB
-boot_size=50          # MiB
+boot_size=100         # MiB
 
 # Create beginning of disk
 dd if=/dev/zero bs=1M count=$((part_position/1024)) of="$out"

@@ -27,6 +27,10 @@ fi
 # Default packages.
 PACKAGES=(
 	xserver-xorg-video-fbturbo
+	xserver-xorg-video-armsoc-sunxi
+	libmali-sunxi-utgard0-r6p0
+	mesa-utils-extra
+	glmark2-es2
 	libvdpau-sunxi1
 	vdpauinfo
 	aisleriot
@@ -90,6 +94,12 @@ fi
 
 # Desktop dependent post installation.
 case $DESKTOP in
+	mate)
+		# Change default wallpaper
+		dpkg-divert --divert /usr/share/backgrounds/ubuntu-mate-common/Ubuntu-Mate-Cold-stock.jpg --rename /usr/share/backgrounds/ubuntu-mate-common/Ubuntu-Mate-Cold.jpg
+		ln -s /usr/share/backgrounds/ubuntu-mate-pinebook/Pinebook-Wallpaper-6.jpg /usr/share/backgrounds/ubuntu-mate-common/Ubuntu-Mate-Cold.jpg
+		;;
+
 	i3|i3wm)
 		if [ ! -d /usr/share/slim/themes/pine64 ]; then
 			cp -ra /usr/share/slim/themes/default /usr/share/slim/themes/pine64
