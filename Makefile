@@ -192,7 +192,7 @@ xenial-sd2emmc-pinebook: xenial-sd2emmc-pinebook-bspkernel-$(RELEASE_NAME)-$(REL
 xenial-minimal-pine64: xenial-minimal-pine64-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
 
 .PHONY: linux-pine64
-linux-pine64: zesty-minimal-pine64 xenial-minimal-pine64 stretch-minimal-pine64 jessie-minimal-pine64 jessie-openmediavault-pine64
+linux-pine64: zesty-minimal-pine64 xenial-minimal-pine64 stretch-minimal-pine64 jessie-minimal-pine64
 
 .PHONY: zesty-minimal-sopine
 zesty-minimal-sopine: zesty-minimal-sopine-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
