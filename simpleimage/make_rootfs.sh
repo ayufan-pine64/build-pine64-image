@@ -160,6 +160,7 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BF428671
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 56A3D45E
 add-apt-repository "deb http://ppa.launchpad.net/longsleep/ubuntu-pine64-flavour-makers/ubuntu xenial main"
 add-apt-repository "deb http://ppa.launchpad.net/ayufan/pine64-ppa/ubuntu xenial main"
+add-apt-repository -y ppa:ubuntu-mozilla-security/ppa
 curl -fsSL http://deb.ayufan.eu/orgs/ayufan-pine64/archive.key | apt-key add -
 apt-get -y update
 apt-get -y install sudo sunxi-disp-tool \
@@ -218,14 +219,9 @@ EOF
 				do_chroot /usr/local/sbin/install_desktop.sh i3
 				do_chroot systemctl set-default graphical.target
 				;;
-<<<<<<< HEAD
-			sd2emmc)
-				do_chroot /usr/local/sbin/pine64_sd2emmc.sh
-=======
 
 			openmediavault)
 				do_chroot /usr/local/sbin/install_openmediavault.sh
->>>>>>> 4c5f7d1c29eea1736d836d50181b8635e899f3d6
 				;;
 		esac
 		do_chroot systemctl enable ssh-keygen

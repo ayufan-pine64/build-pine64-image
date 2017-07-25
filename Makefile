@@ -112,16 +112,6 @@ BUILD_MODELS := pine64 pinebook sopine
 		"$(filter $(BUILD_MODELS), $(subst -, ,$@))" \
 		"$(filter $(BUILD_VARIANTS), $(subst -, ,$@))"
 
-xenial-sd2emmc-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img: simple-image-pinebook-$(RELEASE_NAME).img.xz linux-pine64-$(RELEASE_NAME).tar.xz linux-pine64-package-$(RELEASE_NAME).deb boot-tools
-	sudo bash ./build-pine64-image.sh \
-		$(shell readlink -f $@) \
-		$(shell readlink -f $<) \
-		$(shell readlink -f linux-pine64-$(RELEASE_NAME).tar.xz) \
-		$(shell readlink -f linux-pine64-package-$(RELEASE_NAME).deb) \
-		xenial \
-		pinebook \
-		sd2emmc
-
 .PHONY: kernel-tarball
 kernel-tarball: linux-pine64-$(RELEASE_NAME).tar.xz
 
@@ -184,9 +174,6 @@ linux-pinebook: xenial-pinebook stretch-pinebook jessie-minimal-pinebook
 
 .PHONY: zesty-minimal-pine64
 zesty-minimal-pine64: zesty-minimal-pine64-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
-
-.PHONY: xenial-sd2emmc-pinebook
-xenial-sd2emmc-pinebook: xenial-sd2emmc-pinebook-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
 
 .PHONY: xenial-minimal-pine64
 xenial-minimal-pine64: xenial-minimal-pine64-bspkernel-$(RELEASE_NAME)-$(RELEASE).img.xz
