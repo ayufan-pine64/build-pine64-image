@@ -57,6 +57,7 @@ linux-pine64-package-$(RELEASE_NAME).deb: package package/rtk_bt/rtk_hciattach/r
 		-p $@ \
 		--deb-priority optional --category admin \
 		--force \
+		--depends figlet \
 		--deb-compression bzip2 \
 		--after-install package/scripts/postinst.deb \
 		--before-remove package/scripts/prerm.deb \
