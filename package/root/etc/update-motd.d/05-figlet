@@ -1,3 +1,5 @@
 #!/bin/sh
 
+if [ $(which figlet) ]; then
 figlet $(hostname)
+fi
