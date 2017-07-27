@@ -1,5 +1,5 @@
 #!/bin/sh
 
-if [ $(which figlet) ]; then
+if [ $(which figlet) >/dev/null 2>&1 ]; then
 figlet $(hostname)
 fi
