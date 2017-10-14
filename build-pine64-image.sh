@@ -52,6 +52,10 @@ case "$VARIANT" in
         SIZE=2048
         ;;
 
+    retroarch)
+        SIZE=5120
+        ;;
+
     *)
         echo "Unknown VARIANT: $VARIANT"
         exit 1

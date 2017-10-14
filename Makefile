@@ -95,7 +95,7 @@ simple-image-pinebook-$(RELEASE_NAME).img: linux-pine64-$(RELEASE_NAME).tar.xz b
 		bash ./make_simpleimage.sh $(shell readlink -f "$@") 150 $(shell readlink -f linux-pine64-$(RELEASE_NAME).tar.xz)
 
 BUILD_SYSTEMS := xenial zesty jessie stretch
-BUILD_VARIANTS := minimal mate i3 openmediavault
+BUILD_VARIANTS := minimal mate i3 openmediavault retroarch
 BUILD_ARCHS := arm64
 BUILD_MODELS := pine64 pinebook sopine
 
@@ -170,6 +170,9 @@ jessie-minimal-pine64: jessie-minimal-pine64-$(RELEASE_NAME)-$(RELEASE).img.xz
 
 .PHONY: jessie-openmediavault-pine64
 jessie-openmediavault-pine64: jessie-openmediavault-pine64-$(RELEASE_NAME)-$(RELEASE).img.xz
+
+.PHONY: xenial-retroarch-pine64
+xenial-retroarch-pine64: xenial-retroarch-pine64-$(RELEASE_NAME)-$(RELEASE).img.xz
 
 .PHONY: zesty-pinebook
 zesty-pinebook: zesty-minimal-pinebook zesty-mate-pinebook zesty-i3-pinebook
