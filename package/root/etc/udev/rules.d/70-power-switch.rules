@@ -1,0 +1,11 @@
+# Match the special power key input/event
+ACTION=="add", SUBSYSTEM=="input", ATTRS{name}=="axp81x-supplyer", TAG+="power-switch"
+
+# Match the touchpad and special/blue Fn-keys
+# Also matches the normal keyboard but it fires no power-switch relevant events
+# There appears to be little difference between the keyboard/mouse devices, only:
+# ID_INPUT_MOUSE=1 vs ID_INPUT_KEYBOARD=1
+ACTION=="add", SUBSYSTEM=="input", ATTRS{idVendor}=="258a", ATTRS{idProduct}=="000c", TAG+="power-switch"
+
+# Match the lid/hall sensor
+ACTION=="add", SUBSYSTEM=="input", ATTRS{name}=="hall", TAG+="power-switch"
