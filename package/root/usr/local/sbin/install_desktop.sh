@@ -47,6 +47,7 @@ PACKAGES+=(
 	rxvt-unicode-lite
 	suckless-tools
 	network-manager
+	network-manager-gnome
 	pulseaudio
 )
 
