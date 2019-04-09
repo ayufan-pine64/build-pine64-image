@@ -1,0 +1,6 @@
+[Adding or changing system-wide NetworkManager connections]
+Identity=unix-group:netdev;unix-group:sudo
+Action=org.freedesktop.NetworkManager.*
+ResultAny=yes
+ResultInactive=no
+ResultActive=yes
